@@ -1,0 +1,2959 @@
+
+
+                                                  Files, exceptional handling, logging and memory management Questions
+
+Question - 1 What is the difference between interpreted and compiled languages ?
+Answer 1 - The main difference between **interpreted** and **compiled** languages lies in how they are executed by a computer:
+
+### **Compiled Languages**
+- The code is **translated** into machine code (binary instructions) by a compiler **before execution**.
+- The compiled program runs **directly** on the CPU without needing the original source code or compiler.
+- This results in **faster execution** but requires a separate compilation step.
+- Examples: **C, C++, Rust, Go**
+
+### **Interpreted Languages**
+- The code is **executed line-by-line** by an interpreter **at runtime**, without a prior compilation step.
+- This makes debugging easier and allows for **platform independence**, but it generally runs **slower** than compiled code.
+- Examples: **Python, JavaScript, Ruby, PHP**
+
+### **Hybrid Approach**
+Some languages use a combination of both:
+- **Java**: Compiled into bytecode, then interpreted by the Java Virtual Machine (JVM).
+- **Python**: Compiled into bytecode (`.pyc` files), then interpreted.
+- **C#**: Compiled into Intermediate Language (IL), then executed by the .NET runtime.
+
+Question 2 -  What is exception handling in Python ?
+Answer 2 - ### **Exception Handling in Python**
+Exception handling in Python is a mechanism that allows you to handle errors gracefully without crashing the program. It uses **try-except** blocks to catch and manage exceptions.
+
+### **Why Use Exception Handling?**
+- Prevents the program from crashing due to unexpected errors.
+- Provides custom error messages and handling.
+- Improves debugging and user experience.
+
+---
+
+### **Basic Syntax**
+```python
+try:
+    # Code that might raise an exception
+    result = 10 / 0  # This will cause a ZeroDivisionError
+except ZeroDivisionError:
+    # Handle the error
+    print("You cannot divide by zero!")
+```
+
+🔹 **`try`**: Contains the code that might raise an exception.  
+🔹 **`except`**: Catches the exception and executes the code inside the block.
+
+---
+
+### **Handling Multiple Exceptions**
+```python
+try:
+    num = int(input("Enter a number: "))
+    result = 10 / num
+except ZeroDivisionError:
+    print("Cannot divide by zero!")
+except ValueError:
+    print("Invalid input! Please enter a number.")
+```
+Here, Python will handle different types of errors separately.
+
+---
+
+### **Using `else` and `finally`**
+```python
+try:
+    num = int(input("Enter a number: "))
+    result = 10 / num
+except ZeroDivisionError:
+    print("Cannot divide by zero!")
+else:
+    print("Division successful:", result)  # Runs if no exceptions occur
+finally:
+    print("This block always runs.")  # Executes no matter what
+```
+
+🔹 **`else`**: Runs if no exceptions occur.  
+🔹 **`finally`**: Runs regardless of whether an exception was raised or not.
+
+---
+
+### **Raising Custom Exceptions**
+You can manually raise exceptions using `raise`:
+```python
+def check_age(age):
+    if age < 18:
+        raise ValueError("Age must be 18 or older.")
+    return "Access granted!"
+
+try:
+    print(check_age(16))
+except ValueError as e:
+    print("Error:", e)
+```
+
+---
+
+### **Key Takeaways**
+- Use `try-except` to handle exceptions.
+- Use `else` for code that runs when no exceptions occur.
+- Use `finally` for cleanup actions.
+- Use `raise` to generate custom exceptions
+
+
+Question - 3  What is the purpose of the finally block in exception handling ?
+Answer 3 - ### **Purpose of the `finally` Block in Exception Handling**
+The `finally` block in Python is used to execute code **regardless of whether an exception occurs or not**. It is typically used for cleanup actions, such as closing files, releasing resources, or disconnecting from databases.
+
+---
+
+### **Key Characteristics of `finally`**
+✔ **Always Executes** – Runs no matter what happens in the `try` and `except` blocks.  
+✔ **Used for Cleanup** – Ensures that resources (e.g., files, network connections) are properly closed.  
+✔ **Cannot Be Skipped** – Even if there is a `return` or `break` statement inside `try` or `except`, `finally` will still execute.
+
+---
+
+### **Example 1: Cleaning Up Resources**
+```python
+try:
+    file = open("data.txt", "r")
+    content = file.read()
+    print(content)
+except FileNotFoundError:
+    print("File not found!")
+finally:
+    print("Closing the file...")
+    file.close()  # Ensures file is closed even if an error occurs
+```
+🔹 **Why use `finally` here?**  
+Even if an exception is raised, the file will be closed properly, preventing resource leaks.
+
+---
+
+### **Example 2: Ensuring Execution**
+```python
+def divide(a, b):
+    try:
+        result = a / b
+        return result
+    except ZeroDivisionError:
+        print("Cannot divide by zero!")
+        return None
+    finally:
+        print("Execution completed.")  # Runs no matter what
+
+print(divide(10, 2))
+print(divide(10, 0))
+```
+🔹 **Output:**
+```
+Execution completed.
+5.0
+Cannot divide by zero!
+Execution completed.
+None
+```
+Even though `return` is used in `try` and `except`, the `finally` block **still executes**.
+
+---
+
+### **When Should You Use `finally`?**
+- **Closing files** to prevent memory leaks.
+- **Releasing resources** like database connections or network sockets.
+- **Logging important information** after a process runs.
+- **Ensuring critical cleanup code runs** no matter what.
+
+Question - 4  What is logging in Python ?
+Answer - 4 ### **Logging in Python**
+Logging in Python is a way to track events that happen during program execution. It helps with **debugging, monitoring, and analyzing** code behavior.
+
+Instead of using `print()` for debugging, logging provides:
+✔ **More control over messages**  
+✔ **Different severity levels**  
+✔ **Ability to write logs to files**  
+✔ **Better debugging and error tracking**  
+
+---
+
+### **Basic Logging Example**
+```python
+import logging
+
+logging.basicConfig(level=logging.INFO)  # Set logging level
+logging.info("This is an info message")
+logging.warning("This is a warning message")
+logging.error("This is an error message")
+```
+🔹 **Output:**
+```
+WARNING:root:This is a warning message
+ERROR:root:This is an error message
+```
+(Default level is `WARNING`, so `INFO` is ignored unless explicitly set.)
+
+---
+
+### **Logging Levels**
+Python logging has five main levels:
+| Level     | Numeric Value | When to Use |
+|-----------|--------------|-------------|
+| `DEBUG`   | 10           | Detailed debugging info |
+| `INFO`    | 20           | General program info |
+| `WARNING` | 30           | Something unexpected happened but the program can continue |
+| `ERROR`   | 40           | A serious issue occurred |
+| `CRITICAL`| 50           | A major failure that requires immediate attention |
+
+Example:
+```python
+logging.debug("Debugging details")
+logging.info("Information message")
+logging.warning("Warning alert")
+logging.error("An error occurred")
+logging.critical("Critical failure!")
+```
+
+---
+
+### **Writing Logs to a File**
+```python
+logging.basicConfig(filename="app.log", level=logging.DEBUG, 
+                    format="%(asctime)s - %(levelname)s - %(message)s")
+
+logging.info("Logging to a file now!")
+```
+🔹 **Log file (`app.log`) example:**
+```
+2025-03-08 10:00:00 - INFO - Logging to a file now!
+```
+
+---
+
+### **Custom Logger Example**
+```python
+logger = logging.getLogger("MyLogger")
+logger.setLevel(logging.DEBUG)
+
+handler = logging.FileHandler("custom.log")
+formatter = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+
+logger.addHandler(handler)
+logger.info("This is a custom log message")
+```
+
+Question - 4 What is the significance of the __del__ method in Python ?
+Answer - 4 ### **`__del__` Method in Python (Destructor)**
+The `__del__` method in Python is a **destructor** method that is called when an object is **about to be destroyed** (i.e., when it is no longer referenced). It is mainly used to **clean up resources** like closing files, network connections, or releasing memory.
+
+---
+
+### **Basic Example of `__del__`**
+```python
+class Demo:
+    def __init__(self, name):
+        self.name = name
+        print(f"Object {self.name} created.")
+
+    def __del__(self):
+        print(f"Object {self.name} is being destroyed.")
+
+obj = Demo("Test")  # Creates an object
+del obj  # Explicitly deletes the object
+```
+🔹 **Output:**
+```
+Object Test created.
+Object Test is being destroyed.
+```
+When `del obj` is called, Python automatically calls `__del__()` before deleting the object.
+
+---
+
+### **When is `__del__` Called?**
+1. **When an object goes out of scope** (not referenced anymore).
+2. **When `del` is explicitly used** on an object.
+3. **When the program ends**, and garbage collection removes the object.
+
+Example:
+```python
+def create_obj():
+    temp = Demo("Temporary Object")
+
+create_obj()
+# Once the function ends, temp is out of scope, and `__del__` is triggered.
+```
+
+---
+
+### **Use Case: Releasing Resources**
+`__del__` is useful for **closing files, database connections, or cleaning up memory**.
+
+Example:
+```python
+class FileHandler:
+    def __init__(self, filename):
+        self.file = open(filename, "w")
+        print(f"File {filename} opened.")
+
+    def __del__(self):
+        self.file.close()
+        print(f"File closed.")
+
+file_obj = FileHandler("test.txt")
+del file_obj  # Ensures the file is closed before deletion
+```
+🔹 Ensures the file is **properly closed** when the object is deleted.
+
+---
+
+### **Limitations of `__del__`**
+1. **Not Guaranteed to Run Immediately**  
+   - Python’s **garbage collector** decides when to delete objects, so `__del__` **may not run immediately**.
+   
+2. **Circular References Can Prevent Deletion**  
+   - If objects reference each other, Python might not call `__del__` unless manually cleared.
+
+3. **Avoid Using `__del__` for Critical Cleanup**  
+   - Use `try-finally` or **context managers (`with` statement)** instead for predictable resource cleanup.
+
+Example (better approach than `__del__`):
+```python
+with open("test.txt", "w") as file:
+    file.write("Hello")
+# No need for `__del__`, as the file closes automatically.
+```
+
+---
+
+### **Key Takeaways**
+✔ `__del__` is a destructor method called before an object is deleted.  
+✔ Used to release resources like files, databases, or network connections.  
+✔ Not always reliable due to Python's garbage collection.  
+✔ Context managers (`with`) are a better alternative for cleanup tasks.
+
+Question - 6  What is the difference between import and from ... import in Python ? 
+Answer - 6 ### **Difference Between `import` and `from ... import` in Python**  
+
+Python provides two main ways to **import modules**:  
+1. **`import module_name`**  
+2. **`from module_name import specific_function_or_class`**
+
+---
+
+### **1️⃣ Using `import module_name`**
+- Imports the entire module.
+- Requires you to use the module name when calling functions.
+
+**Example:**
+```python
+import math
+
+print(math.sqrt(16))  # Correct
+```
+🔹 **Advantage:** Prevents name conflicts since functions are always accessed with `module_name.function_name`.  
+🔹 **Disadvantage:** You have to type the module name every time you use a function.
+
+---
+
+### **2️⃣ Using `from module_name import specific_function_or_class`**
+- Imports only the specified function(s) or class(es).
+- You can call them **directly** without the module name.
+
+**Example:**
+```python
+from math import sqrt
+
+print(sqrt(16))  # No need to write math.sqrt
+```
+🔹 **Advantage:** Cleaner and shorter code since you don't need the module prefix.  
+🔹 **Disadvantage:** Can cause **name conflicts** if multiple modules have functions with the same name.
+
+---
+
+### **3️⃣ Using `from module_name import *` (Not Recommended)**
+- Imports **everything** from a module, allowing direct access to all functions.
+- Can **cause conflicts** if multiple modules have functions with the same name.
+
+**Example:**
+```python
+from math import *
+
+print(sqrt(16))  # Works, but can cause conflicts if another sqrt() is imported later
+```
+🔹 **Risky** because if another module has `sqrt()`, it can **overwrite** the previous one.
+
+---
+
+### **Comparison Table**
+| Method                     | Pros ✅                           | Cons ❌                        | Example Usage |
+|----------------------------|---------------------------------|--------------------------------|--------------|
+| `import module_name`       | Prevents conflicts, clear code | Requires module prefix | `import math` → `math.sqrt(16)` |
+| `from module_name import X` | Shorter, cleaner syntax | Possible name conflicts | `from math import sqrt` → `sqrt(16)` |
+| `from module_name import *` | Quick access to all functions | High risk of conflicts | `from math import *` → `sqrt(16)` |
+
+---
+
+### **Best Practices**
+✔ Use **`import module_name`** when working with large modules to avoid name conflicts.  
+✔ Use **`from module import X`** when importing a few specific functions for better readability.  
+✔ Avoid **`from module import *`** unless absolutely necessary.
+
+Question - 7  How can you handle multiple exceptions in Python
+Answer - 7 ### **Handling Multiple Exceptions in Python**  
+
+Python provides several ways to handle multiple exceptions gracefully using `try-except` blocks.  
+
+---
+
+### **1️⃣ Handling Multiple Exceptions with Multiple `except` Blocks**
+You can catch **different exceptions separately** using multiple `except` blocks.
+
+**Example:**
+```python
+try:
+    num = int(input("Enter a number: "))
+    result = 10 / num  # May raise ZeroDivisionError
+except ValueError:
+    print("Invalid input! Please enter a number.")
+except ZeroDivisionError:
+    print("Cannot divide by zero!")
+```
+✅ This ensures that each error is handled **separately and appropriately**.  
+
+---
+
+### **2️⃣ Handling Multiple Exceptions in a Single `except` Block**
+You can catch multiple exceptions **in one block** by using a tuple.
+
+**Example:**
+```python
+try:
+    num = int(input("Enter a number: "))
+    result = 10 / num
+except (ValueError, ZeroDivisionError) as e:
+    print(f"An error occurred: {e}")
+```
+✅ This approach is useful when you want to handle multiple errors in the **same way**.  
+
+---
+
+### **3️⃣ Using a Generic Exception (`Exception`)**
+You can catch **all exceptions** using `Exception`, but this should be used cautiously.
+
+**Example:**
+```python
+try:
+    num = int(input("Enter a number: "))
+    result = 10 / num
+except Exception as e:
+    print(f"An unexpected error occurred: {e}")
+```
+✅ **Good for debugging** but may hide specific errors, making troubleshooting harder.  
+
+---
+
+### **4️⃣ Using `else` and `finally` with Multiple Exceptions**
+- **`else`** runs if no exception occurs.  
+- **`finally`** runs **no matter what** (used for cleanup).
+
+**Example:**
+```python
+try:
+    num = int(input("Enter a number: "))
+    result = 10 / num
+except (ValueError, ZeroDivisionError) as e:
+    print(f"An error occurred: {e}")
+else:
+    print(f"Success! The result is {result}")
+finally:
+    print("Execution completed.")
+```
+✅ Ensures **clean and structured exception handling**.  
+
+---
+
+Question - 8  What is the purpose of the with statement when handling files in Python ?
+Answer - 8 ### **Purpose of the `with` Statement in File Handling (Python)**  
+
+The `with` statement in Python is used for **handling files** efficiently and safely. It ensures that files are **automatically closed** after operations, even if an exception occurs.  
+
+---
+
+### **🔹 Why Use `with` Instead of `open()`?**  
+Normally, when using `open()`, you need to manually close the file:  
+
+```python
+file = open("example.txt", "r")
+content = file.read()
+file.close()  # Must be closed manually
+```
+❌ **Problem:** If an error occurs before `file.close()`, the file **remains open**, causing memory leaks.  
+
+---
+
+### **✅ Using `with` Statement (Best Practice)**
+```python
+with open("example.txt", "r") as file:
+    content = file.read()  # File is automatically closed after this block
+```
+✔ **No need to call `close()` manually**  
+✔ **Prevents resource leaks**  
+✔ **Safer and cleaner syntax**  
+
+---
+
+### **🔹 Example: Writing to a File**
+```python
+with open("output.txt", "w") as file:
+    file.write("Hello, Python!")
+```
+✔ The file is **automatically closed** once the block ends.  
+
+---
+
+### **🔹 Example: Handling Exceptions**
+If an error occurs inside `with`, Python **still ensures** the file is closed:  
+```python
+try:
+    with open("non_existent.txt", "r") as file:
+        content = file.read()
+except FileNotFoundError:
+    print("File not found!")
+```
+✔ Prevents program crashes and **handles errors properly**.  
+
+Question - 9  What is the difference between multithreading and multiprocessing ?
+Answer - 9 ### **Difference Between Multithreading and Multiprocessing in Python**  
+
+Both **multithreading** and **multiprocessing** are used to run tasks concurrently, but they work in different ways.  
+
+| Feature        | **Multithreading** 🧵 | **Multiprocessing** 🔥 |
+|---------------|----------------------|----------------------|
+| **Definition** | Uses multiple threads within a single process | Uses multiple processes (separate memory spaces) |
+| **Parallelism** | No true parallel execution due to **GIL** | True parallel execution (bypasses GIL) |
+| **Best For** | I/O-bound tasks (e.g., file operations, network requests) | CPU-bound tasks (e.g., mathematical computations, data processing) |
+| **Memory Usage** | Shares memory within the same process | Each process has its own memory space |
+| **Overhead** | Low (lightweight) | High (more memory & process creation time) |
+| **Example** | Web scraping, downloading files, GUI applications | Image processing, scientific computing, data analysis |
+
+---
+
+### **1️⃣ Multithreading (Thread-based concurrency)**
+Multithreading allows multiple **threads** to run **within the same process**. However, due to Python’s **Global Interpreter Lock (GIL)**, only one thread executes Python code at a time.  
+
+**Example using `threading` module:**
+```python
+import threading
+
+def print_numbers():
+    for i in range(5):
+        print(i)
+
+thread1 = threading.Thread(target=print_numbers)
+thread2 = threading.Thread(target=print_numbers)
+
+thread1.start()
+thread2.start()
+thread1.join()
+thread2.join()
+```
+🔹 **Best for:** **I/O-bound tasks** (e.g., network calls, file handling)  
+
+---
+
+### **2️⃣ Multiprocessing (Process-based concurrency)**
+Multiprocessing creates **separate processes**, each with its **own memory** and Python interpreter. This allows **true parallel execution**, bypassing GIL.
+
+**Example using `multiprocessing` module:**
+```python
+import multiprocessing
+
+def print_numbers():
+    for i in range(5):
+        print(i)
+
+process1 = multiprocessing.Process(target=print_numbers)
+process2 = multiprocessing.Process(target=print_numbers)
+
+process1.start()
+process2.start()
+process1.join()
+process2.join()
+```
+🔹 **Best for:** **CPU-bound tasks** (e.g., matrix operations, image processing)  
+
+---
+
+Question - 10  What are the advantages of using logging in a program ?
+Answer - 10 ### **Advantages of Using Logging in a Program**  
+
+Logging is an essential tool for tracking events and debugging programs. Instead of using `print()`, logging provides **better control, flexibility, and efficiency**.  
+
+---
+
+### **🔹 Key Advantages of Logging**  
+
+#### **1️⃣ Helps Debugging and Troubleshooting**  
+✅ Logs **detailed error messages** to help identify issues quickly.  
+✅ Useful for tracking **unexpected behavior** without stopping the program.  
+```python
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logging.debug("This is a debug message")
+```
+
+---
+
+#### **2️⃣ Provides Different Log Levels**  
+✅ Categorizes logs by severity: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`.  
+✅ Allows filtering logs based on importance.  
+```python
+logging.warning("This is a warning!")
+logging.error("Something went wrong!")
+```
+
+---
+
+#### **3️⃣ Stores Logs for Future Analysis**  
+✅ Logs can be **saved to a file** for later review.  
+✅ Helps analyze **past system behavior** and identify patterns.  
+```python
+logging.basicConfig(filename="app.log", level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.info("User logged in successfully")
+```
+
+---
+
+#### **4️⃣ Improves Application Monitoring**  
+✅ Used in **server applications** to monitor performance and errors.  
+✅ Helps detect **security breaches, failed logins, or system failures**.  
+
+---
+
+#### **5️⃣ Supports Multi-Threading and Multi-Processing**  
+✅ Works well with **multithreading and multiprocessing** applications.  
+✅ Prevents conflicts when multiple processes write logs.  
+
+---
+
+#### **6️⃣ More Efficient Than `print()`**  
+✅ `print()` statements slow down performance, while logging is **optimized for production**.  
+✅ Logs can be **disabled in production** without removing code:  
+```python
+logging.disable(logging.CRITICAL)  # Disables all logs below CRITICAL level
+```
+
+---
+
+Question - 11  What is memory management in Python ?
+Answer - 11 ### **Memory Management in Python**  
+
+Memory management in Python is the process of **allocating and deallocating memory** for objects automatically. Python uses a **dynamic memory management system**, which includes **garbage collection, reference counting, and memory pools** to efficiently manage memory.
+
+---
+
+### **🔹 Key Components of Python Memory Management**  
+
+#### **1️⃣ Automatic Garbage Collection (GC)**
+✅ Python has an inbuilt **garbage collector** that automatically removes unused objects from memory.  
+✅ The `gc` module allows manual garbage collection.  
+```python
+import gc
+gc.collect()  # Manually triggers garbage collection
+```
+
+---
+
+#### **2️⃣ Reference Counting (Primary Mechanism)**
+✅ Python uses **reference counting** to track how many references exist to an object.  
+✅ When the reference count reaches **zero**, the object is deleted.
+
+**Example:**
+```python
+import sys
+
+a = [1, 2, 3]
+print(sys.getrefcount(a))  # Reference count of 'a'
+b = a  # New reference to the same object
+print(sys.getrefcount(a))  # Count increases
+del a  # Deleting 'a' decreases the count
+```
+🔹 **Issue:** Reference cycles (objects referring to each other) **can prevent automatic deletion**.
+
+---
+
+#### **3️⃣ Garbage Collection (Handles Cyclic References)**
+✅ The garbage collector **removes circular references** (e.g., objects referring to each other).  
+✅ Uses **Generational Garbage Collection** (objects are grouped into generations for efficiency).  
+
+**Example:**
+```python
+import gc
+
+class Cycle:
+    def __init__(self):
+        self.ref = self  # Creates a reference cycle
+
+obj = Cycle()
+del obj  # Object isn't immediately deleted due to the cycle
+gc.collect()  # Explicitly clears cycles
+```
+
+---
+
+#### **4️⃣ Memory Pools (Efficient Allocation)**
+Python uses **memory pools** to optimize memory usage:  
+- **Small Object Allocator:** Manages small objects (< 512 bytes).  
+- **Pymalloc:** Optimized memory management for Python objects.  
+
+✅ This reduces **fragmentation** and speeds up memory allocation.  
+
+---
+
+### **🔹 How to Optimize Memory Usage in Python?**  
+
+✔ **Use `del` to remove unnecessary objects**  
+```python
+a = [1, 2, 3]
+del a  # Deletes the object
+```
+
+✔ **Use Generators Instead of Lists** (saves memory)  
+```python
+def gen():
+    for i in range(10):
+        yield i
+
+g = gen()  # Uses less memory than a list
+```
+
+✔ **Avoid Circular References** (break cycles manually)  
+```python
+class A:
+    def __init__(self):
+        self.b = None
+
+obj1 = A()
+obj2 = A()
+obj1.b = obj2
+obj2.b = obj1
+
+del obj1, obj2  # Breaks reference cycle
+gc.collect()  # Ensures cleanup
+```
+
+✔ **Use `__slots__` to Reduce Memory Usage in Classes**  
+```python
+class MyClass:
+    __slots__ = ['x', 'y']  # Restricts attributes to save memory
+
+obj = MyClass()
+obj.x = 10
+obj.y = 20
+```
+🔹 **Saves memory** by preventing the creation of a dictionary (`__dict__`) for each instance.
+
+---
+
+Question - 12  What are the basic steps involved in exception handling in Python ? 
+Answer - 12 ### **Basic Steps in Exception Handling in Python**  
+
+Exception handling in Python ensures that programs **handle errors gracefully** instead of crashing. The process follows these key steps:  
+
+---
+
+### **1️⃣ Use `try` Block to Enclose Risky Code**  
+The `try` block contains code that **might raise an exception**.  
+
+**Example:**  
+```python
+try:
+    num = int(input("Enter a number: "))  # Might cause ValueError
+    result = 10 / num  # Might cause ZeroDivisionError
+```
+🔹 If no exception occurs, the code inside `try` executes normally.  
+🔹 If an exception occurs, Python **immediately stops execution** inside `try` and moves to the `except` block.  
+
+---
+
+### **2️⃣ Use `except` Block to Handle Specific Exceptions**  
+You define one or more `except` blocks to handle specific errors.  
+
+**Example:**  
+```python
+try:
+    num = int(input("Enter a number: "))
+    result = 10 / num
+except ValueError:
+    print("Invalid input! Please enter a number.")
+except ZeroDivisionError:
+    print("Cannot divide by zero!")
+```
+✅ **Each `except` block handles a specific type of error.**  
+✅ If an exception occurs, Python runs the first matching `except` block.  
+
+---
+
+### **3️⃣ Use `except Exception` for General Error Handling (Optional)**  
+You can catch **all exceptions** using `Exception`, but it's best used cautiously.  
+
+**Example:**  
+```python
+try:
+    num = int(input("Enter a number: "))
+    result = 10 / num
+except Exception as e:
+    print(f"An unexpected error occurred: {e}")
+```
+🔹 **Best practice:** Catch **specific exceptions first**, then use `Exception` for general errors.  
+
+---
+
+### **4️⃣ Use `else` Block for Code That Runs if No Exception Occurs**  
+The `else` block executes **only if no exceptions occur** inside `try`.  
+
+**Example:**  
+```python
+try:
+    num = int(input("Enter a number: "))
+    result = 10 / num
+except ZeroDivisionError:
+    print("Cannot divide by zero!")
+except ValueError:
+    print("Invalid input!")
+else:
+    print(f"Success! The result is {result}")  # Runs only if no error occurs
+```
+
+---
+
+### **5️⃣ Use `finally` Block to Run Cleanup Code (Always Executes)**  
+The `finally` block runs **no matter what**, even if an exception occurs. It's useful for cleanup tasks like closing files or database connections.  
+
+**Example:**  
+```python
+try:
+    file = open("data.txt", "r")
+    content = file.read()
+except FileNotFoundError:
+    print("File not found!")
+finally:
+    file.close()  # Ensures file is always closed
+```
+✅ Ensures resources are released properly.  
+
+---
+
+Question - 13  Why is memory management important in Python ?
+Answer - 13 ### **Why is Memory Management Important in Python?**  
+
+Memory management in Python is crucial for ensuring **efficient resource usage**, **better performance**, and **preventing memory leaks**. Since Python is dynamically typed and uses automatic memory allocation, effective memory management helps optimize how objects are stored and removed.
+
+---
+
+### **🔹 Key Reasons Why Memory Management Matters**  
+
+#### **1️⃣ Prevents Memory Leaks**
+✅ **Unused objects can waste memory** if not cleared properly.  
+✅ Python’s **garbage collector** automatically removes unreferenced objects.  
+
+**Example of a Memory Leak (Circular Reference):**  
+```python
+import gc
+
+class A:
+    def __init__(self):
+        self.ref = self  # Creates a circular reference
+
+obj = A()
+del obj  # Object isn't deleted due to self-reference
+
+gc.collect()  # Manually trigger garbage collection
+```
+✔ **Proper memory management prevents such leaks!**  
+
+---
+
+#### **2️⃣ Improves Program Performance**
+✅ Python uses **dynamic memory allocation**, but excessive memory use slows down execution.  
+✅ Memory pools (like **pymalloc**) help manage small objects efficiently.  
+```python
+a = [1] * (10**6)  # Creates a large list, consuming memory
+del a  # Free up memory when it's no longer needed
+```
+✔ Proper memory cleanup **frees up space** for other processes.  
+
+---
+
+#### **3️⃣ Optimizes Memory Usage in Large Applications**
+✅ Large-scale applications (data processing, AI, web apps) **consume high memory**.  
+✅ Using **generators and `__slots__`** reduces memory footprint.  
+
+**Example: Using a Generator Instead of a List (Saves Memory)**  
+```python
+def generate_numbers():
+    for i in range(1000000):
+        yield i  # Uses less memory than storing all values in a list
+
+gen = generate_numbers()  # Efficient memory usage
+```
+
+---
+
+#### **4️⃣ Enables Efficient Object Lifecycle Management**
+✅ Python uses **reference counting** to track object usage.  
+✅ Objects are **automatically destroyed** when no references exist.  
+```python
+import sys
+
+a = [1, 2, 3]
+print(sys.getrefcount(a))  # Check reference count
+b = a  # Increases reference count
+del a  # Decreases count
+```
+✔ Helps Python **free up memory efficiently**.  
+
+---
+
+#### **5️⃣ Helps Manage Multi-Threaded and Multi-Process Applications**
+✅ Poor memory management can **cause race conditions** in multi-threaded apps.  
+✅ Memory isolation in **multiprocessing** prevents memory corruption.  
+
+---
+
+Question - 14  What is the role of try and except in exception handling ?
+Answer - 14 ### **Role of `try` and `except` in Exception Handling (Python)**  
+
+The `try` and `except` blocks are fundamental for **handling errors** in Python. They allow programs to **catch and manage exceptions gracefully**, preventing crashes.  
+
+---
+
+### **🔹 Role of `try` Block**  
+✅ The `try` block **contains code that might cause an exception**.  
+✅ If no error occurs, the code runs normally.  
+✅ If an error occurs, execution **immediately stops** and moves to the `except` block.  
+
+**Example:**  
+```python
+try:
+    num = int(input("Enter a number: "))  # Might raise ValueError
+    result = 10 / num  # Might raise ZeroDivisionError
+```
+
+---
+
+### **🔹 Role of `except` Block**  
+✅ The `except` block **handles exceptions that occur inside `try`**.  
+✅ Prevents the program from crashing by catching errors.  
+✅ Can handle **specific exceptions** or **all exceptions**.  
+
+**Example: Handling Specific Exceptions**  
+```python
+try:
+    num = int(input("Enter a number: "))
+    result = 10 / num
+except ValueError:  # Handles invalid number input
+    print("Invalid input! Please enter a number.")
+except ZeroDivisionError:  # Handles division by zero
+    print("Cannot divide by zero!")
+```
+
+---
+
+### **🔹 Catching All Exceptions (Use with Caution!)**  
+You can catch **all exceptions** using `except Exception`, but it's recommended to handle specific ones first.  
+
+```python
+try:
+    num = int(input("Enter a number: "))
+    result = 10 / num
+except Exception as e:
+    print(f"An error occurred: {e}")
+```
+✅ Useful for logging unexpected errors.  
+❌ **Not recommended as a first approach**—better to catch specific exceptions first.  
+
+---
+Question - 15  How does Python's garbage collection system work ?
+Answer - 15 ### **How Python’s Garbage Collection System Works**  
+
+Python’s **garbage collection (GC) system** **automatically manages memory** by removing **unused objects** to free up space. It uses a combination of:  
+1. **Reference Counting** (Primary Mechanism)  
+2. **Garbage Collector (Handles Circular References)**  
+3. **Generational Garbage Collection (Optimizes Performance)**  
+
+---
+
+### **🔹 1️⃣ Reference Counting (Primary Mechanism)**
+Every object in Python has an **internal reference count**, which tracks how many variables or objects refer to it.  
+✅ When the reference count **drops to zero**, Python automatically deletes the object.  
+
+**Example:**
+```python
+import sys
+
+a = [1, 2, 3]
+print(sys.getrefcount(a))  # Count includes our reference + 1 from getrefcount()
+b = a  # New reference to the same object
+print(sys.getrefcount(a))  # Count increases
+del a  # Decreases count
+print(sys.getrefcount(b))  # Still exists because of 'b'
+del b  # Count reaches zero, object is deleted
+```
+🔹 **Limitation:** Reference cycles (objects referring to each other) **prevent automatic deletion**.  
+
+---
+
+### **🔹 2️⃣ Garbage Collector (Handles Circular References)**  
+Python’s **garbage collector** (`gc` module) **removes circular references** that reference counting alone cannot handle.  
+- Python **detects cyclic references** and clears them when needed.  
+- Uses a **"Generational Garbage Collection"** strategy (explained below).  
+
+**Example of Circular Reference (Memory Leak Risk)**
+```python
+import gc
+
+class A:
+    def __init__(self):
+        self.ref = self  # Circular reference
+
+obj = A()
+del obj  # Reference count doesn't drop to zero
+
+gc.collect()  # Manually force garbage collection
+```
+✅ **Solution:** Use `gc.collect()` to force cleanup when needed.  
+
+---
+
+### **🔹 3️⃣ Generational Garbage Collection (Optimization)**
+Python divides objects into **three generations (0, 1, 2)** for efficient garbage collection.  
+
+| Generation | Description | Collection Frequency |
+|------------|-------------|----------------------|
+| **0 (Young)** | New objects (most likely to be deleted) | Frequent |
+| **1 (Middle-aged)** | Survived one collection cycle | Less frequent |
+| **2 (Old)** | Long-living objects (e.g., global variables) | Rare |
+
+✅ Objects **move to older generations** if they survive multiple garbage collections.  
+✅ Python **collects Gen 0 more often** because most objects die young.  
+
+**Example: Manually Running Garbage Collection**  
+```python
+import gc
+
+gc.collect()  # Force garbage collection
+print(gc.get_stats())  # Get details on collected objects
+```
+
+---
+
+Question - 16  What is the purpose of the else block in exception handling ?
+Answer - 16 ### **Purpose of the `else` Block in Exception Handling (Python)**  
+
+The `else` block in exception handling is **executed only if no exceptions occur** in the `try` block. It is used for code that should run **only when the `try` block succeeds** without errors.  
+
+---
+
+### **🔹 Why Use the `else` Block?**  
+✅ Keeps **error-handling code separate** from normal logic.  
+✅ Improves **code readability** by clearly distinguishing successful execution.  
+✅ Ensures **certain actions only run when no errors occur**.  
+
+---
+
+### **🔹 Syntax of `try-except-else`**
+```python
+try:
+    # Code that may raise an exception
+except SomeException:
+    # Runs if an exception occurs
+else:
+    # Runs only if no exception occurs
+```
+
+---
+
+### **🔹 Example: Handling Division**
+```python
+try:
+    num = int(input("Enter a number: "))
+    result = 10 / num  # Might raise ZeroDivisionError or ValueError
+except ZeroDivisionError:
+    print("Cannot divide by zero!")
+except ValueError:
+    print("Invalid input! Please enter a number.")
+else:
+    print(f"Success! The result is {result}")  # Runs only if no exception occurs
+```
+✅ If no error occurs, the `else` block executes.  
+✅ If an error occurs, the `except` block handles it, and the `else` block is **skipped**.  
+
+---
+
+### **🔹 When Should You Use `else`?**  
+✔ When you need to execute code **only if no exception occurs**.  
+✔ When separating **error handling** from **successful execution logic** improves clarity.  
+✔ When performing **operations that depend on successful execution** (e.g., saving results, logging success).  
+
+---
+
+Question - 17  What are the common logging levels in Python 
+Answer - 17 ### **Common Logging Levels in Python**  
+
+Python’s `logging` module provides different **logging levels** to categorize messages based on **severity**. These levels help developers **track events, debug issues, and monitor application behavior** effectively.  
+
+---
+
+### **🔹 1️⃣ Logging Levels (From Lowest to Highest Severity)**  
+
+| Level | Numeric Value | Purpose |
+|--------|--------------|---------|
+| **DEBUG** | `10` | Detailed information for debugging. |
+| **INFO** | `20` | General information about program execution. |
+| **WARNING** | `30` | Indicates potential problems but doesn't stop execution. |
+| **ERROR** | `40` | Serious issue; some part of the program failed. |
+| **CRITICAL** | `50` | Severe error; program may terminate. |
+
+✅ **By default, Python logs messages of `WARNING` level and above.**  
+
+---
+
+### **🔹 2️⃣ Example: Using Different Logging Levels**
+```python
+import logging
+
+# Configure logging to display messages in the console
+logging.basicConfig(level=logging.DEBUG, format='%(levelname)s: %(message)s')
+
+logging.debug("This is a debug message")    # Used for troubleshooting
+logging.info("This is an info message")    # General program execution details
+logging.warning("This is a warning")       # Alerts about potential issues
+logging.error("This is an error")          # Something went wrong
+logging.critical("This is a critical error") # Program may crash
+```
+
+✅ Since we set `level=logging.DEBUG`, **all levels** are displayed.  
+
+---
+
+### **🔹 3️⃣ Changing the Logging Level**  
+You can set a minimum logging level using `logging.basicConfig(level=LEVEL)`.  
+
+**Example: Only log warnings and above (`WARNING`, `ERROR`, `CRITICAL`)**  
+```python
+logging.basicConfig(level=logging.WARNING)
+```
+
+---
+
+### **🔹 4️⃣ When to Use Each Logging Level?**  
+| Logging Level | When to Use? |
+|--------------|-------------|
+| **DEBUG** | Debugging during development (e.g., variable values, function calls). |
+| **INFO** | General status updates (e.g., "Service started successfully"). |
+| **WARNING** | Something might go wrong (e.g., "Low disk space"). |
+| **ERROR** | A part of the program has failed (e.g., "File not found"). |
+| **CRITICAL** | Severe failure (e.g., "Database connection lost, shutting down"). |
+
+---
+
+Question - 18  What is the difference between os.fork() and multiprocessing in Python ?
+Answer - 18 ### **Difference Between `os.fork()` and `multiprocessing` in Python**  
+
+Both `os.fork()` and the `multiprocessing` module are used for **creating new processes** in Python, but they work in different ways and have different use cases.
+
+---
+
+## **🔹 1️⃣ `os.fork()` (UNIX Only)**
+✅ `os.fork()` is a **low-level system call** that creates a new child process by duplicating the parent process.  
+✅ Only available on **Unix-based systems** (Linux, macOS).  
+✅ The child process **shares the same memory space initially** as the parent.  
+
+### **Example Using `os.fork()`**
+```python
+import os
+
+pid = os.fork()  # Creates a new process
+
+if pid == 0:
+    print("Child process running (PID:", os.getpid(), ")")
+else:
+    print("Parent process running (PID:", os.getpid(), "), Child PID:", pid)
+```
+✔ The **child process (PID 0)** runs separately.  
+✔ The **parent process** continues execution, knowing the child's PID.  
+
+🔴 **Limitations:**  
+- **Not available on Windows.**  
+- **Requires manual inter-process communication (IPC)** for data sharing.  
+- **Shared memory can cause issues** if not handled properly.  
+
+---
+
+## **🔹 2️⃣ `multiprocessing` Module (Cross-Platform)**
+✅ The `multiprocessing` module provides a **high-level API** for creating and managing processes.  
+✅ **Works on both Windows and Unix.**  
+✅ Uses **separate memory space** for each process (avoids shared memory issues).  
+
+### **Example Using `multiprocessing`**
+```python
+from multiprocessing import Process
+
+def child_function():
+    print("Child process running")
+
+if __name__ == "__main__":
+    process = Process(target=child_function)
+    process.start()  # Start the new process
+    process.join()  # Wait for child process to finish
+    print("Parent process exiting")
+```
+✔ Creates a **new process with its own memory** (independent from the parent).  
+✔ **Safer than `os.fork()`**, as Python handles process management.  
+
+---
+
+## **🔹 Key Differences**
+| Feature            | `os.fork()` | `multiprocessing` |
+|-------------------|------------|-------------------|
+| **Platform** | Unix/Linux/macOS only | Works on **Windows, Linux, macOS** |
+| **Process Creation** | Direct system call | High-level Python API |
+| **Memory** | Shared memory | Separate memory space |
+| **Ease of Use** | Low-level (requires manual handling) | High-level (built-in management) |
+| **IPC (Data Sharing)** | Needs manual setup | Has built-in support (`Queue`, `Pipe`) |
+| **Performance** | Faster (low overhead) | Slightly more overhead due to abstraction |
+
+---
+
+Question - 19  What is the importance of closing a file in Python ?
+Answer - 19 ### **Importance of Closing a File in Python (`file.close()`)**  
+
+Closing a file in Python is **crucial** for ensuring proper resource management and avoiding potential issues like **data loss, memory leaks, and file corruption**.  
+
+---
+
+## **🔹 Why is Closing a File Important?**  
+
+### **1️⃣ Releases System Resources (Memory & File Handles)**  
+✅ When a file is open, the **operating system locks the file** and allocates resources.  
+✅ If the file is **not closed**, these resources remain **occupied unnecessarily**.  
+✅ **Too many open files** can cause the system to run out of file handles.  
+
+**Example: Not Closing a File (Bad Practice)**  
+```python
+file = open("example.txt", "w")
+file.write("Hello, world!")  
+# File remains open, consuming system resources
+```
+🔴 **Risk:** Keeping files open for too long can slow down performance.  
+
+---
+
+### **2️⃣ Ensures Data is Saved Properly**  
+✅ Some operating systems **cache write operations** before committing changes to the disk.  
+✅ If a file is not closed, **data may not be written completely**, leading to **data loss**.  
+
+**Example: Closing a File Properly**  
+```python
+file = open("example.txt", "w")
+file.write("Hello, world!")
+file.close()  # Ensures all data is saved
+```
+✔ **Ensures data is flushed from the buffer to disk.**  
+
+---
+
+### **3️⃣ Prevents File Corruption**  
+✅ If a file is not closed properly and a program **crashes or exits unexpectedly**,  
+   - The file may become **corrupted**.  
+   - Partially written data may lead to **incomplete or unreadable files**.  
+
+---
+
+### **4️⃣ Avoids Conflicts in Multi-Access Environments**  
+✅ If multiple programs (or processes) try to access the same file,  
+   - An **open file lock** may prevent others from writing to it.  
+   - Closing the file releases the lock, allowing other processes to use it safely.  
+
+---
+
+## **🔹 Best Practice: Use `with` Statement (Auto-Closes File)**  
+Instead of manually closing a file, **use the `with` statement**, which ensures that files are closed automatically—even if an exception occurs.  
+
+```python
+with open("example.txt", "w") as file:
+    file.write("Hello, world!")  
+# File is automatically closed after exiting the 'with' block
+```
+✔ **No need to call `file.close()` manually.**  
+✔ **Safer** (ensures proper cleanup even if an error occurs).  
+
+---
+
+Question - 20  What is the difference between file.read() and file.readline() in Python ?
+Answer - 20 ### **Difference Between `file.read()` and `file.readline()` in Python**  
+
+Both `file.read()` and `file.readline()` are used to **read content from a file**, but they behave differently.
+
+---
+
+## **🔹 1️⃣ `file.read()` – Reads the Entire File or a Given Number of Bytes**  
+✅ Reads the **entire file** as a **single string** (default behavior).  
+✅ Can also read a **specific number of bytes** if a size parameter is provided.  
+✅ **Not memory-efficient** for large files.  
+
+### **Example: Using `read()` (Reads Entire File)**
+```python
+with open("example.txt", "r") as file:
+    content = file.read()  # Reads the entire file
+    print(content)
+```
+✔ **Good for small files**, but **not suitable for large files** (can cause memory issues).  
+
+### **📌 Reading a Fixed Number of Bytes**
+```python
+with open("example.txt", "r") as file:
+    content = file.read(10)  # Reads only the first 10 characters
+    print(content)
+```
+✔ Useful for reading **partial content** without loading the entire file.  
+
+---
+
+## **🔹 2️⃣ `file.readline()` – Reads One Line at a Time**  
+✅ Reads **only one line** from the file at a time.  
+✅ Each call to `readline()` moves the cursor to the **next line**.  
+✅ **More memory-efficient** when reading large files **line by line**.  
+
+### **Example: Using `readline()`**
+```python
+with open("example.txt", "r") as file:
+    line1 = file.readline()  # Reads the first line
+    line2 = file.readline()  # Reads the second line
+    print(line1.strip())  # Removes trailing newline characters
+    print(line2.strip())
+```
+✔ Best for **reading files line-by-line**, such as **logs, large text files, or streaming data**.  
+
+---
+
+## **🔹 Key Differences**
+| Feature        | `file.read()` | `file.readline()` |
+|---------------|--------------|------------------|
+| **Reads**     | Entire file (or specified bytes) | One line at a time |
+| **Return Type** | String | String (single line) |
+| **Memory Usage** | High for large files | Efficient (reads one line at a time) |
+| **Best For**  | Small files | Large files (line-by-line processing) |
+
+---
+
+Question - 21  What is the logging module in Python used for ? 
+Answer - 21 ### **🔹 The `logging` Module in Python: Purpose & Use Cases**  
+
+The `logging` module in Python is used for **tracking events** that happen during program execution. It allows developers to **record messages** for debugging, monitoring, and troubleshooting applications.  
+
+---
+
+## **🔹 Why Use the `logging` Module?**  
+✅ **Helps Debugging** – Tracks errors and events in real-time.  
+✅ **Saves Time** – Logs provide insights into program flow and help diagnose issues.  
+✅ **Customizable** – Supports different logging **levels** (`DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`).  
+✅ **Saves Logs to Files** – Unlike `print()`, logs can be stored in files for later analysis.  
+✅ **Works in Large Applications** – Supports multi-module logging with timestamps.  
+
+---
+
+## **🔹 Basic Example of Logging**  
+```python
+import logging
+
+# Configure basic logging settings
+logging.basicConfig(level=logging.INFO)
+
+logging.info("This is an informational message.")
+logging.warning("This is a warning message.")
+logging.error("This is an error message.")
+```
+✔ Output:  
+```
+INFO:root:This is an informational message.
+WARNING:root:This is a warning message.
+ERROR:root:This is an error message.
+```
+🚀 Unlike `print()`, logs show the **log level** and can be **turned on/off** easily.  
+
+---
+
+## **🔹 Logging Levels**
+| Level        | Numeric Value | Purpose |
+|-------------|--------------|---------|
+| **DEBUG**   | 10 | Detailed debugging messages. |
+| **INFO**    | 20 | General information on program execution. |
+| **WARNING** | 30 | Indicates potential problems. |
+| **ERROR**   | 40 | Records errors that prevent part of the program from running. |
+| **CRITICAL**| 50 | Very severe errors; program may terminate. |
+
+**Example: Set Minimum Log Level**  
+```python
+logging.basicConfig(level=logging.WARNING)
+logging.debug("This will NOT be shown")
+logging.warning("This WILL be shown")
+```
+✔ Since the level is `WARNING`, only `WARNING`, `ERROR`, and `CRITICAL` messages will appear.  
+
+---
+
+## **🔹 Writing Logs to a File**
+Instead of printing logs to the console, you can save them to a **log file**.  
+```python
+logging.basicConfig(filename="app.log", level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
+
+logging.info("Application started")
+logging.error("Something went wrong!")
+```
+✔ Now, logs are written to `app.log`, with timestamps.  
+
+---
+
+Question - 22 What is the os module in Python used for in file handling ? 
+Answer - 22 ### **🔹 The `os` Module in Python for File Handling**  
+
+The `os` module in Python provides **functions to interact with the operating system**, including **file and directory management**. It allows you to perform **file operations** such as creating, deleting, renaming, and checking file existence.
+
+---
+
+## **🔹 Common File Handling Functions in `os`**  
+
+| Function | Purpose |
+|----------|---------|
+| `os.rename(src, dest)` | Rename a file or directory |
+| `os.remove(file_path)` | Delete a file |
+| `os.mkdir(dir_path)` | Create a new directory |
+| `os.rmdir(dir_path)` | Delete an empty directory |
+| `os.makedirs(path)` | Create nested directories |
+| `os.listdir(dir_path)` | List files and directories in a folder |
+| `os.path.exists(path)` | Check if a file or directory exists |
+| `os.path.isfile(file_path)` | Check if a path is a file |
+| `os.path.isdir(dir_path)` | Check if a path is a directory |
+
+---
+
+## **🔹 Examples of File Handling with `os`**
+
+### **📌 1. Renaming a File**
+```python
+import os
+
+os.rename("old_file.txt", "new_file.txt")
+print("File renamed successfully!")
+```
+
+---
+
+### **📌 2. Deleting a File**
+```python
+import os
+
+if os.path.exists("file_to_delete.txt"):
+    os.remove("file_to_delete.txt")
+    print("File deleted successfully!")
+else:
+    print("File not found!")
+```
+
+---
+
+### **📌 3. Checking if a File Exists**
+```python
+import os
+
+file_path = "example.txt"
+if os.path.exists(file_path):
+    print("File exists!")
+else:
+    print("File does not exist!")
+```
+
+---
+
+### **📌 4. Creating and Removing Directories**
+```python
+import os
+
+# Creating a single directory
+os.mkdir("new_folder")
+
+# Creating nested directories
+os.makedirs("parent_folder/child_folder")
+
+# Removing an empty directory
+os.rmdir("new_folder")
+```
+
+---
+
+### **📌 5. Listing Files in a Directory**
+```python
+import os
+
+files = os.listdir(".")  # List files in the current directory
+print("Files in directory:", files)
+```
+
+---
+
+## **🔹 When to Use the `os` Module for File Handling?**
+✅ When working with **file system operations** like renaming, deleting, and checking files.  
+✅ When managing **directories** (creating, deleting, and listing).  
+✅ When checking **file properties** before performing actions.  
+
+Question - 23  What are the challenges associated with memory management in Python ?
+Answer - 23 ### **🔹 Challenges of Memory Management in Python**  
+
+Python has **automatic memory management**, meaning it **handles memory allocation and deallocation** for you. However, there are some challenges that developers should be aware of.  
+
+---
+
+## **🔹 1️⃣ Garbage Collection Overhead**  
+✅ Python uses **garbage collection (GC)** to free unused memory, but it **adds processing overhead**.  
+✅ GC runs **periodically**, which may cause **performance slowdowns**, especially in **large applications**.  
+
+**Example of Manually Running Garbage Collection:**  
+```python
+import gc
+
+gc.collect()  # Manually triggers garbage collection
+```
+✔ Helps **force memory cleanup**, but should be used **sparingly**.
+
+---
+
+## **🔹 2️⃣ Memory Leaks**  
+✅ Python’s garbage collector doesn’t always clean up memory properly.  
+✅ **Circular references** (where objects reference each other) may prevent memory from being freed.  
+
+**Example of Circular Reference Causing a Memory Leak:**  
+```python
+import gc
+
+class A:
+    def __init__(self):
+        self.ref = None  # Holds reference to another object
+
+a1 = A()
+a2 = A()
+a1.ref = a2  # Circular reference
+a2.ref = a1
+
+del a1, a2  # Deleting references doesn’t free memory immediately
+gc.collect()  # May still not clear memory due to circular reference
+```
+✔ **Solution:** Use `weakref` module to create weak references that don’t interfere with garbage collection.  
+
+---
+
+## **🔹 3️⃣ High Memory Usage Due to Objects Staying in Memory**  
+✅ Python keeps **objects in memory longer than needed** due to:  
+   - **Large lists, dictionaries, and objects** that are not explicitly deleted.  
+   - **Global variables** that persist throughout the program’s execution.  
+✅ **Solution:** Use `del` or reassign variables when memory is tight.  
+
+```python
+large_list = [i for i in range(10**6)]  # Large list consuming memory
+del large_list  # Frees memory
+```
+✔ This removes **large objects** from memory manually.  
+
+---
+
+## **🔹 4️⃣ Inefficient Memory Usage in Large Applications**  
+✅ Python’s **dynamic typing** and **automatic memory allocation** can lead to **unnecessary memory consumption**.  
+✅ Objects like lists and dictionaries **consume more memory** than necessary due to dynamic resizing.  
+
+✔ **Solution:** Use memory-efficient alternatives:  
+- **Use generators (`yield`) instead of lists** to avoid storing large datasets in memory.  
+- **Use `slots` in classes** to reduce memory overhead in object attributes.  
+
+**Example of `slots` Reducing Memory Usage:**  
+```python
+class NormalClass:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+
+class OptimizedClass:
+    __slots__ = ['name', 'age']  # Restricts attributes to save memory
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+```
+✔ **`__slots__` reduces memory consumption** by preventing unnecessary attribute storage.  
+
+---
+
+## **🔹 5️⃣ Global Interpreter Lock (GIL) & Memory Management**  
+✅ Python’s **Global Interpreter Lock (GIL)** restricts multiple threads from executing Python code **at the same time**, which can **limit efficient memory use in multi-threaded applications**.  
+✅ **Solution:** Use **multiprocessing** instead of multithreading to bypass GIL restrictions.  
+
+```python
+from multiprocessing import Process
+
+def task():
+    print("Running in a separate process")
+
+p = Process(target=task)
+p.start()
+p.join()
+```
+✔ **Multiprocessing creates separate memory spaces**, improving performance in memory-intensive tasks.  
+
+---
+
+## **🔹 Summary of Challenges**
+| **Challenge** | **Cause** | **Solution** |
+|--------------|---------|-------------|
+| **Garbage Collection Overhead** | Automatic memory cleanup slows performance | Manually trigger `gc.collect()` sparingly |
+| **Memory Leaks** | Circular references prevent objects from being freed | Use `weakref` for weak references |
+| **High Memory Usage** | Large objects stay in memory longer than needed | Use `del`, reassign variables, or optimize data structures |
+| **Inefficient Memory Usage** | Lists & dictionaries consume extra memory | Use generators, `__slots__`, and memory-efficient types |
+| **GIL Limiting Multi-threading** | GIL prevents efficient memory use across threads | Use `multiprocessing` instead of `threading` |
+
+---
+
+Question - 24   How do you raise an exception manually in Python ?
+Answer - 24 ### **🔹 How to Manually Raise an Exception in Python**  
+
+In Python, you can **manually raise an exception** using the `raise` keyword. This is useful when you need to **handle errors proactively** instead of waiting for Python to generate them.
+
+---
+
+## **🔹 1️⃣ Raising a Built-in Exception**  
+You can raise a built-in exception like `ValueError`, `TypeError`, `KeyError`, etc.
+
+### **Example: Raising a `ValueError`**
+```python
+age = -5
+if age < 0:
+    raise ValueError("Age cannot be negative!")
+```
+✔ Output:  
+```
+ValueError: Age cannot be negative!
+```
+🚀 This helps catch **invalid input early**.
+
+---
+
+## **🔹 2️⃣ Raising a Custom Exception**  
+You can **define a custom exception** by creating a class that inherits from `Exception`.
+
+### **Example: Custom Exception for Invalid Age**
+```python
+class InvalidAgeError(Exception):
+    """Custom exception for invalid age"""
+    pass
+
+age = -10
+if age < 0:
+    raise InvalidAgeError("Age cannot be negative!")
+```
+✔ This makes error handling **more descriptive and modular**.
+
+---
+
+## **🔹 3️⃣ Raising an Exception with `try-except`**
+You can combine `raise` with `try-except` for better control.
+
+### **Example: Handling Raised Exception**
+```python
+try:
+    raise ValueError("Something went wrong!")
+except ValueError as e:
+    print(f"Handled Error: {e}")
+```
+✔ Output:  
+```
+Handled Error: Something went wrong!
+```
+🚀 This allows the program to **continue running** instead of crashing.
+
+---
+
+## **🔹 4️⃣ Raising an Exception from Another Exception (`raise from`)**  
+If one exception is caused by another, you can use `raise from` for better debugging.
+
+### **Example: Chaining Exceptions**
+```python
+try:
+    x = int("abc")  # Causes ValueError
+except ValueError as e:
+    raise TypeError("Invalid conversion") from e
+```
+✔ Output:  
+```
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+ValueError: invalid literal for int() with base 10: 'abc'
+
+The above exception was the direct cause of the following exception:
+
+TypeError: Invalid conversion
+```
+This keeps a **clear traceback** of errors.
+
+---
+
+Question - 25  Why is it important to use multithreading in certain applications ?
+Answer - 25 ### **🔹 Importance of Multithreading in Certain Applications**  
+
+**Multithreading** is important in applications where tasks can be performed **concurrently**, improving responsiveness and performance. It allows a program to run **multiple operations in parallel** within the same process.
+
+---
+
+## **🔹 1️⃣ Improves Application Responsiveness**  
+✅ In GUI applications (like **Tkinter, PyQt, or web apps**), using multithreading **prevents the UI from freezing**.  
+✅ If a task (like **downloading a file**) runs on the **main thread**, the UI **freezes** until it completes.  
+
+**Example: GUI Freezing Without Multithreading**  
+```python
+import time
+import tkinter as tk
+
+def long_task():
+    time.sleep(5)  # Simulates a time-consuming operation
+    print("Task completed!")
+
+root = tk.Tk()
+tk.Button(root, text="Start Task", command=long_task).pack()
+root.mainloop()
+```
+🚨 **Problem**: The UI becomes **unresponsive** while the task is running.
+
+**Solution: Run Task in a Separate Thread**  
+```python
+import threading
+
+def run_task():
+    threading.Thread(target=long_task).start()
+```
+✔ The UI remains **responsive** while the task runs in the background.
+
+---
+
+## **🔹 2️⃣ Faster Execution for I/O-Bound Tasks**  
+✅ **I/O-bound tasks** (e.g., **network requests, file I/O, database queries**) spend time **waiting** for external resources.  
+✅ Since Python’s **Global Interpreter Lock (GIL)** restricts multiple threads from executing Python bytecode **simultaneously**, **multithreading is best for I/O-bound tasks** (not CPU-heavy tasks).  
+
+### **Example: Downloading Multiple Files in Parallel**
+```python
+import threading
+import requests
+
+def download_file(url):
+    response = requests.get(url)
+    print(f"Downloaded {url}")
+
+urls = ["https://example.com/file1", "https://example.com/file2"]
+threads = [threading.Thread(target=download_file, args=(url,)) for url in urls]
+
+for thread in threads:
+    thread.start()
+for thread in threads:
+    thread.join()
+```
+✔ This downloads **multiple files concurrently**, reducing wait time.
+
+---
+
+## **🔹 3️⃣ Efficient Resource Utilization**  
+✅ In **web servers** (like Flask, Django), multithreading allows multiple client requests to be **handled simultaneously**.  
+✅ Instead of **blocking** a request while waiting for a response, a new thread can handle another request.  
+
+**Example: Multithreaded Web Server**
+```python
+from flask import Flask
+import threading
+
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "Hello, World!"
+
+if __name__ == "__main__":
+    threading.Thread(target=app.run, kwargs={"debug": True}).start()
+```
+✔ Multiple requests can be **processed in parallel**.
+
+---
+
+## **🔹 4️⃣ Better Performance in Certain Scenarios**  
+✅ While **CPU-bound tasks** (like **image processing, machine learning**) benefit more from **multiprocessing**, some performance improvements can be seen in **hybrid** workloads.  
+✅ **Multithreading + multiprocessing** can be combined for **best performance**.  
+
+---
+
+## **🚀 When to Use Multithreading?**
+| **Scenario** | **Multithreading?** | **Why?** |
+|-------------|----------------|----------|
+| **GUI Applications** | ✅ Yes | Prevents UI freezing |
+| **Web Scraping** | ✅ Yes | Multiple pages can be scraped simultaneously |
+| **File I/O** | ✅ Yes | Reading/writing multiple files concurrently |
+| **Network Requests** | ✅ Yes | Handles multiple API requests faster |
+| **CPU-Intensive Tasks** | ❌ No | Use multiprocessing instead (bypasses GIL) |
+
+---
+
+
+
+
+
+
+                                                                      Practical Questions
+
+
+
+Question - 1  How can you open a file for writing in Python and write a string to it 
+Answer - 1 You can open a file for writing in Python using the `open()` function with the `"w"` mode. Here’s an example:
+
+```python
+# Open the file in write mode ('w')
+with open("example.txt", "w") as file:
+    # Write a string to the file
+    file.write("Hello, world!")
+```
+
+### Explanation:
+- `"w"` mode opens the file for writing. If the file exists, it will be overwritten. If it doesn’t exist, a new file will be created.
+- `with` ensures that the file is properly closed after writing.
+- `file.write("Hello, world!")` writes the string to the file.
+
+If you want to append to an existing file instead of overwriting, use `"a"` mode:
+
+```python
+with open("example.txt", "a") as file:
+    file.write("\nThis is an appended line.")
+```
+
+Question - 2 Write a Python program to read the contents of a file and print each line
+Answer - 2 Here’s a simple Python program to read the contents of a file and print each line:  
+
+```python
+# Open the file in read mode ('r')
+with open("example.txt", "r") as file:
+    # Loop through each line in the file
+    for line in file:
+        print(line.strip())  # strip() removes extra whitespace/newline characters
+```
+
+### Explanation:
+- The `open("example.txt", "r")` opens the file in read mode.
+- The `for line in file:` iterates through each line in the file.
+- The `print(line.strip())` removes trailing newline characters for cleaner output.
+
+This will print each line of `example.txt` to the console.
+
+Question - 3  How would you handle a case where the file doesn't exist while trying to open it for reading
+Answer - 3 You can handle the case where the file doesn't exist by using a `try-except` block to catch the `FileNotFoundError`. Here's how:  
+
+```python
+try:
+    with open("example.txt", "r") as file:
+        for line in file:
+            print(line.strip())
+except FileNotFoundError:
+    print("Error: The file does not exist.")
+```
+
+### Explanation:
+- The `try` block attempts to open and read the file.
+- If the file is missing, Python raises a `FileNotFoundError`, which is caught by the `except` block.
+- The program then prints a friendly error message instead of crashing.  
+
+This ensures the program continues running smoothly even if the file is missing.
+
+Question - 4  Write a Python script that reads from one file and writes its content to another file
+Answer - 4 Here’s a Python script that reads from one file (`source.txt`) and writes its content to another file (`destination.txt`):  
+
+```python
+# Open source file for reading and destination file for writing
+with open("source.txt", "r") as source, open("destination.txt", "w") as destination:
+    for line in source:
+        destination.write(line)
+
+print("File content copied successfully!")
+```
+
+### Explanation:
+- The `with open("source.txt", "r") as source` opens the source file in read mode.
+- The `with open("destination.txt", "w") as destination` opens the destination file in write mode (creating or overwriting it).
+- The `for line in source:` reads each line from the source file.
+- The `destination.write(line)` writes each line to the new file.
+- Using `with open(...)` ensures the files are properly closed after execution.  
+
+If `source.txt` does not exist, the script will raise a `FileNotFoundError`, which you can handle with a `try-except` block:
+
+```python
+try:
+    with open("source.txt", "r") as source, open("destination.txt", "w") as destination:
+        for line in source:
+            destination.write(line)
+    print("File content copied successfully!")
+except FileNotFoundError:
+    print("Error: source.txt not found!")
+```
+
+Question - 5  How would you catch and handle division by zero error in Python 
+Answer - 5 You can catch and handle a **division by zero** error in Python using a `try-except` block to catch the `ZeroDivisionError`. Here’s an example:
+
+```python
+try:
+    num1 = int(input("Enter numerator: "))
+    num2 = int(input("Enter denominator: "))
+    result = num1 / num2
+    print("Result:", result)
+except ZeroDivisionError:
+    print("Error: Cannot divide by zero!")
+```
+
+### Explanation:
+- The `try` block contains the division operation.
+- If the denominator (`num2`) is `0`, Python raises a `ZeroDivisionError`.
+- The `except ZeroDivisionError:` catches this specific error and prints a user-friendly message.
+- This prevents the program from crashing and allows graceful handling of the error.
+
+If you want a **general exception handler** (for any unexpected errors), you can add another `except` block:
+
+```python
+try:
+    num1 = int(input("Enter numerator: "))
+    num2 = int(input("Enter denominator: "))
+    result = num1 / num2
+    print("Result:", result)
+except ZeroDivisionError:
+    print("Error: Cannot divide by zero!")
+except Exception as e:
+    print("An error occurred:", e)  # Catches any other unexpected errors
+```
+
+Question - 6  Write a Python program that logs an error message to a log file when a division by zero exception occurs
+Answer - 6 Here's a Python program that logs a **division by zero error** to a log file (`error.log`) using the `logging` module:  
+
+```python
+import logging
+
+# Configure logging to write errors to a file
+logging.basicConfig(filename="error.log", level=logging.ERROR, 
+                    format="%(asctime)s - %(levelname)s - %(message)s")
+
+try:
+    num1 = int(input("Enter numerator: "))
+    num2 = int(input("Enter denominator: "))
+    result = num1 / num2
+    print("Result:", result)
+except ZeroDivisionError:
+    error_message = "Error: Division by zero occurred."
+    print(error_message)
+    logging.error(error_message)  # Log the error to the file
+except Exception as e:
+    print("An unexpected error occurred:", e)
+    logging.error(f"Unexpected error: {e}")
+```
+
+### Explanation:
+- The `logging` module is configured to log errors to **error.log**.
+- `logging.basicConfig()`:
+  - `filename="error.log"` → Logs errors to this file.
+  - `level=logging.ERROR` → Logs only error messages.
+  - `format="%(asctime)s - %(levelname)s - %(message)s"` → Includes timestamp, log level, and message.
+- In the `except ZeroDivisionError:` block:
+  - The error message is printed.
+  - `logging.error(error_message)` logs the error to `error.log`.
+- The `except Exception as e:` block catches any unexpected errors and logs them.
+
+### Example **error.log** entry:
+```
+2025-03-08 14:30:15,123 - ERROR - Error: Division by zero occurred.
+```
+
+This ensures the error is logged for debugging while keeping the program user-friendly. 
+
+Question - 7 How do you log information at different levels (INFO, ERROR, WARNING) in Python using the logging module 
+Answer - 7 In Python, you can log messages at different levels using the `logging` module. The five standard logging levels are:
+
+1. **DEBUG** – Detailed information, typically for debugging.
+2. **INFO** – General information about program execution.
+3. **WARNING** – An indication of potential problems.
+4. **ERROR** – A more serious problem that prevents part of the program from running.
+5. **CRITICAL** – A severe error that may cause the program to crash.
+
+### Example: Logging at Different Levels
+
+```python
+import logging
+
+# Configure logging
+logging.basicConfig(
+    filename="app.log",  # Log messages to this file
+    level=logging.DEBUG,  # Set logging level (lowest level to capture everything)
+    format="%(asctime)s - %(levelname)s - %(message)s"  # Log format
+)
+
+# Logging messages at different levels
+logging.debug("This is a DEBUG message - useful for diagnosing issues.")
+logging.info("This is an INFO message - general runtime information.")
+logging.warning("This is a WARNING message - something unexpected but not critical.")
+logging.error("This is an ERROR message - an issue that prevents execution of part of the program.")
+logging.critical("This is a CRITICAL message - a serious error that may cause a crash.")
+
+print("Logging complete. Check 'app.log' for logged messages.")
+```
+
+### Explanation:
+- `logging.basicConfig(...)` sets up logging:
+  - `filename="app.log"` → Logs messages to `app.log`.
+  - `level=logging.DEBUG` → Captures all levels from DEBUG and above.
+  - `format="%(asctime)s - %(levelname)s - %(message)s"` → Defines log message format.
+- Different log levels are used based on message importance.
+
+### Example Log Output (`app.log`):
+```
+2025-03-08 14:45:12,345 - DEBUG - This is a DEBUG message - useful for diagnosing issues.
+2025-03-08 14:45:12,346 - INFO - This is an INFO message - general runtime information.
+2025-03-08 14:45:12,347 - WARNING - This is a WARNING message - something unexpected but not critical.
+2025-03-08 14:45:12,348 - ERROR - This is an ERROR message - an issue that prevents execution of part of the program.
+2025-03-08 14:45:12,349 - CRITICAL - This is a CRITICAL message - a serious error that may cause a crash.
+```
+
+Question - 8  Write a program to handle a file opening error using exception handling 
+Answer - 8 Here's a Python program that handles a **file opening error** using exception handling:  
+
+```python
+try:
+    # Attempt to open a non-existent file
+    with open("non_existent_file.txt", "r") as file:
+        content = file.read()
+        print(content)
+except FileNotFoundError:
+    print("Error: The file does not exist. Please check the filename and try again.")
+except PermissionError:
+    print("Error: You do not have permission to access this file.")
+except Exception as e:
+    print(f"An unexpected error occurred: {e}")
+```
+
+### Explanation:
+- The `try` block attempts to open a file (`non_existent_file.txt`) in **read mode** (`"r"`).
+- If the file **does not exist**, Python raises a `FileNotFoundError`, which is caught and handled with a user-friendly message.
+- If there’s a **permission issue**, a `PermissionError` is caught and handled.
+- The **general `Exception` block** catches any other unexpected errors.
+
+### Example Outputs:
+#### Case 1: File Not Found  
+```
+Error: The file does not exist. Please check the filename and try again.
+```
+#### Case 2: Permission Denied  
+```
+Error: You do not have permission to access this file.
+```
+#### Case 3: Other Unexpected Error  
+```
+An unexpected error occurred: [Error message]
+```
+
+This approach ensures that **file opening errors** are gracefully handled, preventing program crashes. 🚀
+
+Question - 9  How can you read a file line by line and store its content in a list in Python 
+Answer - 9 You can read a file line by line and store its content in a **list** using the `readlines()` method or list comprehension. Here are two common approaches:
+
+### **Method 1: Using `readlines()`**
+```python
+# Open the file and read lines into a list
+with open("example.txt", "r") as file:
+    lines = file.readlines()  # Reads all lines and stores them as a list
+
+# Print the list of lines
+print(lines)
+```
+#### **Explanation:**
+- `readlines()` reads the entire file and returns a **list**, where each item is a line from the file (including `\n` newline characters).
+- Example output:
+  ```python
+  ['Hello, world!\n', 'This is a test file.\n', 'Python is awesome!\n']
+  ```
+
+---
+
+### **Method 2: Using List Comprehension (Stripping Newlines)**
+```python
+# Read file and store each line in a list (without newlines)
+with open("example.txt", "r") as file:
+    lines = [line.strip() for line in file]  # Removes trailing newlines
+
+# Print the list of lines
+print(lines)
+```
+#### **Explanation:**
+- This method **iterates** over each line in the file directly.
+- `strip()` removes **trailing newlines (`\n`)** for cleaner output.
+- Example output:
+  ```python
+  ['Hello, world!', 'This is a test file.', 'Python is awesome!']
+  ```
+
+Both methods work well, but **Method 2** is preferred when you want **cleaner output without newlines**.
+
+Question - 10  How can you append data to an existing file in Python 
+Answer - 10 You can append data to an existing file in Python by opening the file in **append mode (`"a"`)**. This mode allows you to add content **without overwriting** the existing data.  
+
+### **Example: Appending Data to a File**
+```python
+# Open the file in append mode ('a')
+with open("example.txt", "a") as file:
+    file.write("\nThis is a new line appended to the file.")
+```
+
+### **Explanation:**
+- **`"a"` (append mode)** → Opens the file for writing but does **not** erase existing content.
+- `file.write("\nThis is a new line appended to the file.")` → Adds a new line at the end.
+- **`with open(...)`** ensures the file closes automatically after writing.
+
+### **Verifying the Append Operation**
+To check the updated file content, you can read and print it:
+```python
+with open("example.txt", "r") as file:
+    print(file.read())  # Print file content after appending
+```
+
+This method allows **safe file updates** without losing previous data. 
+
+Question - 11  Write a Python program that uses a try-except block to handle an error when attempting to access a dictionary key that doesn't exist 
+Answer - 11 Here’s a Python program that **handles a missing dictionary key** using a `try-except` block:  
+
+```python
+# Sample dictionary
+data = {"name": "Alice", "age": 25, "city": "New York"}
+
+try:
+    # Attempt to access a key that might not exist
+    value = data["country"]
+    print("Value:", value)
+except KeyError:
+    print("Error: The key 'country' does not exist in the dictionary.")
+```
+
+### **Explanation:**
+- The `try` block attempts to access the key `"country"`, which is **not present** in the dictionary.
+- If the key is missing, Python raises a **`KeyError`**, which is caught in the `except KeyError:` block.
+- The program prints an **error message** instead of crashing.
+
+### **Alternative: Using `.get()` to Avoid Errors**
+Another way to **handle missing keys** without exceptions is by using `.get()`:
+```python
+value = data.get("country", "Key not found")  # Returns "Key not found" if the key is missing
+print(value)
+```
+
+This method is useful when you want to return a **default value** instead of handling an exception. 
+
+Question - 12  Write a program that demonstrates using multiple except blocks to handle different types of exceptions 
+
+Answer - 12 Here's a Python program that demonstrates using **multiple `except` blocks** to handle different types of exceptions:  
+
+```python
+try:
+    # User input for two numbers
+    num1 = int(input("Enter numerator: "))
+    num2 = int(input("Enter denominator: "))
+    
+    # Perform division
+    result = num1 / num2  
+    
+    # Access a dictionary key
+    my_dict = {"name": "Alice", "age": 25}
+    print("City:", my_dict["city"])  # KeyError will occur here
+
+except ZeroDivisionError:
+    print("Error: Cannot divide by zero!")
+
+except ValueError:
+    print("Error: Invalid input! Please enter a valid number.")
+
+except KeyError:
+    print("Error: The specified key does not exist in the dictionary.")
+
+except Exception as e:  # Catches any other unexpected errors
+    print(f"An unexpected error occurred: {e}")
+
+```
+
+### **Explanation:**
+- **`ZeroDivisionError`** → Catches division by zero.
+- **`ValueError`** → Catches non-numeric input.
+- **`KeyError`** → Catches dictionary key access errors.
+- **`Exception` (Generic Catch)** → Handles any other unexpected errors.
+
+### **Example Runs:**
+#### **Input:**
+```
+Enter numerator: 10
+Enter denominator: 0
+```
+#### **Output:**
+```
+Error: Cannot divide by zero!
+```
+
+#### **Input:**
+```
+Enter numerator: ten
+Enter denominator: 2
+```
+#### **Output:**
+```
+Error: Invalid input! Please enter a valid number.
+```
+
+#### **Input:**
+```
+Enter numerator: 10
+Enter denominator: 2
+```
+#### **Output:**
+```
+Error: The specified key does not exist in the dictionary.
+```
+
+This ensures **robust error handling** for different exception types. 🚀
+Write a program that demonstrates using multiple except blocks to handle different types of exceptions
+Answer - 12 Here's a Python program that demonstrates using **multiple `except` blocks** to handle different types of exceptions:  
+
+```python
+try:
+    # User input for two numbers
+    num1 = int(input("Enter numerator: "))
+    num2 = int(input("Enter denominator: "))
+    
+    # Perform division
+    result = num1 / num2  
+    
+    # Access a dictionary key
+    my_dict = {"name": "Alice", "age": 25}
+    print("City:", my_dict["city"])  # KeyError will occur here
+
+except ZeroDivisionError:
+    print("Error: Cannot divide by zero!")
+
+except ValueError:
+    print("Error: Invalid input! Please enter a valid number.")
+
+except KeyError:
+    print("Error: The specified key does not exist in the dictionary.")
+
+except Exception as e:  # Catches any other unexpected errors
+    print(f"An unexpected error occurred: {e}")
+
+```
+
+### **Explanation:**
+- **`ZeroDivisionError`** → Catches division by zero.
+- **`ValueError`** → Catches non-numeric input.
+- **`KeyError`** → Catches dictionary key access errors.
+- **`Exception` (Generic Catch)** → Handles any other unexpected errors.
+
+### **Example Runs:**
+#### **Input:**
+```
+Enter numerator: 10
+Enter denominator: 0
+```
+#### **Output:**
+```
+Error: Cannot divide by zero!
+```
+
+#### **Input:**
+```
+Enter numerator: ten
+Enter denominator: 2
+```
+#### **Output:**
+```
+Error: Invalid input! Please enter a valid number.
+```
+
+#### **Input:**
+```
+Enter numerator: 10
+Enter denominator: 2
+```
+#### **Output:**
+```
+Error: The specified key does not exist in the dictionary.
+```
+
+This ensures **robust error handling** for different exception types.
+
+Question - 13  How would you check if a file exists before attempting to read it in Python
+Answer - 13 You can check if a file exists **before attempting to read it** using the `os.path.exists()` method or the `pathlib` module.
+
+### **Method 1: Using `os.path.exists()`**
+```python
+import os
+
+filename = "example.txt"
+
+if os.path.exists(filename):
+    with open(filename, "r") as file:
+        content = file.read()
+        print(content)
+else:
+    print(f"Error: The file '{filename}' does not exist.")
+```
+#### **Explanation:**
+- `os.path.exists(filename)` checks if the file exists before opening it.
+- If the file exists, it reads and prints the content.
+- If not, it prints an error message instead of raising an exception.
+
+---
+
+### **Method 2: Using `pathlib` (Recommended)**
+```python
+from pathlib import Path
+
+filename = Path("example.txt")
+
+if filename.is_file():  # Checks if it's a valid file
+    with filename.open("r") as file:
+        content = file.read()
+        print(content)
+else:
+    print(f"Error: The file '{filename}' does not exist.")
+```
+#### **Why use `pathlib`?**
+- `Path("example.txt").is_file()` checks if the path exists **and is a file**.
+- `Path` is **more modern and readable** compared to `os.path.exists()`.
+
+Both methods prevent **FileNotFoundError**, ensuring your program **handles missing files gracefully**.
+
+Question - 14  Write a program that uses the logging module to log both informational and error messages ?
+Answer - 14 Here's a Python program that uses the `logging` module to **log both informational and error messages**:  
+
+```python
+import logging
+
+# Configure logging to write logs to a file
+logging.basicConfig(
+    filename="app.log",  # Log file name
+    level=logging.DEBUG,  # Log level (captures INFO and ERROR)
+    format="%(asctime)s - %(levelname)s - %(message)s"  # Log message format
+)
+
+def divide_numbers(num1, num2):
+    """Function to divide two numbers with error handling and logging."""
+    try:
+        logging.info(f"Attempting to divide {num1} by {num2}")  # Log INFO message
+        result = num1 / num2
+        logging.info(f"Division successful: {num1} / {num2} = {result}")
+        return result
+    except ZeroDivisionError:
+        logging.error("Error: Division by zero attempted!")  # Log ERROR message
+        return "Cannot divide by zero"
+    except Exception as e:
+        logging.error(f"Unexpected error: {e}")  # Log ERROR message for any other exceptions
+        return "An unexpected error occurred"
+
+# Example usage
+print(divide_numbers(10, 2))  # Normal case (INFO log)
+print(divide_numbers(10, 0))  # Error case (ERROR log)
+
+print("Check 'app.log' for log messages.")
+```
+
+---
+
+### **Explanation:**
+1. **`logging.basicConfig(...)`**:
+   - Logs messages to **`app.log`**.
+   - Sets **log level** to `DEBUG` (captures both INFO and ERROR).
+   - Defines log **format** with timestamp, log level, and message.
+   
+2. **Logging INFO messages**:
+   - Logs successful operations like starting the division and getting a result.
+
+3. **Logging ERROR messages**:
+   - Logs **division by zero** as an error.
+   - Logs **any unexpected exceptions**.
+
+---
+
+### **Example Log Output (`app.log`):**
+```
+2025-03-08 15:10:45,123 - INFO - Attempting to divide 10 by 2
+2025-03-08 15:10:45,124 - INFO - Division successful: 10 / 2 = 5.0
+2025-03-08 15:10:50,567 - INFO - Attempting to divide 10 by 0
+2025-03-08 15:10:50,568 - ERROR - Error: Division by zero attempted!
+```
+
+Now, you have a **structured log file** tracking both normal operations (`INFO`) and errors (`ERROR`). 
+
+Question - 15  Write a Python program that prints the content of a file and handles the case when the file is empty 
+Answer - 15 Here's a Python program that prints the content of a file and **handles the case when the file is empty**:  
+
+```python
+import os
+
+def print_file_content(filename):
+    """Reads and prints the content of a file, handling empty files."""
+    try:
+        # Check if file exists before opening
+        if not os.path.exists(filename):
+            print(f"Error: The file '{filename}' does not exist.")
+            return
+        
+        # Open the file and read content
+        with open(filename, "r") as file:
+            content = file.read()
+            
+            # Check if file is empty
+            if not content:
+                print(f"The file '{filename}' is empty.")
+            else:
+                print(f"Content of '{filename}':\n{content}")
+    
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+
+# Example usage
+filename = "example.txt"  # Change this to an actual file path
+print_file_content(filename)
+```
+
+---
+
+### **Explanation:**
+1. **Checks if the file exists**:
+   - If not, prints an error message and exits.
+   
+2. **Reads the file content**:
+   - If the file is **empty**, it prints `"The file is empty."`
+   - Otherwise, it prints the file content.
+
+3. **Handles unexpected errors** using a `try-except` block.
+
+---
+
+### **Example Outputs:**
+#### **Case 1: File does not exist**
+```
+Error: The file 'example.txt' does not exist.
+```
+
+#### **Case 2: File is empty**
+```
+The file 'example.txt' is empty.
+```
+
+#### **Case 3: File contains text**
+```
+Content of 'example.txt':
+Hello, world!
+```
+
+This approach ensures **robust file handling** while preventing crashes. 
+
+Question - 16  Demonstrate how to use memory profiling to check the memory usage of a small program
+Answer - 16 You can use the `memory_profiler` module to **check the memory usage** of a Python program. Below is a demonstration of how to use **memory profiling** with the `@profile` decorator to analyze memory usage.
+
+---
+
+### **Step 1: Install `memory_profiler`**
+First, install the `memory_profiler` module if you haven't already:
+```sh
+pip install memory_profiler
+```
+
+---
+
+### **Step 2: Write a Python Program with Memory Profiling**
+Save this code in a file (e.g., `memory_test.py`):
+
+```python
+from memory_profiler import profile
+
+@profile  # Decorator to track memory usage of this function
+def memory_test():
+    # Allocating a list with 1 million numbers
+    large_list = [i for i in range(1000000)]
+    
+    # Calculating the sum
+    total = sum(large_list)
+    
+    print(f"Sum: {total}")
+    
+    # Deleting the list to free memory
+    del large_list
+
+# Run the function
+memory_test()
+```
+
+---
+
+### **Step 3: Run the Script with Memory Profiling**
+Run the script using the command:
+```sh
+python -m memory_profiler memory_test.py
+```
+
+---
+
+### **Output Example (Memory Usage Report)**
+```
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+     4     10.2 MiB     10.2 MiB           1   @profile
+     5                                         def memory_test():
+     6     47.5 MiB     37.3 MiB           1       large_list = [i for i in range(1000000)]
+     8     47.5 MiB      0.0 MiB           1       total = sum(large_list)
+    10     47.5 MiB      0.0 MiB           1       print(f"Sum: {total}")
+    12     10.2 MiB    -37.3 MiB           1       del large_list
+```
+
+---
+
+### **Understanding the Output**
+- `Mem usage`: Total memory used at each line.
+- `Increment`: Memory change (increase or decrease).
+- `Occurrences`: How many times that line was executed.
+- **Key observations**:
+  - Creating `large_list` increases memory usage by **37.3 MiB**.
+  - After `del large_list`, memory usage **drops** back.
+
+---
+
+### **Alternative: Using `memory_usage()` for Real-Time Profiling**
+If you want to track memory usage of an entire function without using the `@profile` decorator, you can use `memory_usage()`:
+
+```python
+from memory_profiler import memory_usage
+
+def memory_test():
+    large_list = [i for i in range(1000000)]
+    total = sum(large_list)
+    print(f"Sum: {total}")
+    del large_list
+
+# Measure memory usage
+mem_usage = memory_usage(memory_test)
+print(f"Memory used: {max(mem_usage) - min(mem_usage)} MiB")
+```
+
+---
+
+### **Why Use Memory Profiling?**
+✅ Detect memory-intensive operations.  
+✅ Optimize memory usage in large programs.  
+✅ Prevent memory leaks in long-running applications.
+
+This technique helps **monitor and improve** memory efficiency in Python programs! 
+
+Question - 17  Write a Python program to create and write a list of numbers to a file, one number per line
+Answer - 17 Here's a Python program that creates a list of numbers and writes them **one per line** to a file:  
+
+```python
+# Define the list of numbers
+numbers = list(range(1, 21))  # Generates numbers from 1 to 20
+
+# Open the file in write mode
+with open("numbers.txt", "w") as file:
+    for number in numbers:
+        file.write(f"{number}\n")  # Write each number on a new line
+
+print("Numbers have been written to numbers.txt successfully.")
+```
+
+---
+
+### **Explanation:**
+1. **Creates a list of numbers** from `1` to `20` using `range()`.
+2. **Opens a file (`numbers.txt`) in write mode (`"w"`)**:
+   - If the file already exists, it will **overwrite** its content.
+3. **Loops through the list** and writes each number **on a new line** using `\n`.
+4. **Prints a success message** after writing.
+
+---
+
+### **Generated File (`numbers.txt`):**
+```
+1
+2
+3
+4
+5
+...
+20
+```
+
+This approach ensures numbers are **properly formatted** in the file for easy reading. 
+
+Question - 18  How would you implement a basic logging setup that logs to a file with rotation after 1MB
+Answer - 18 To implement a **basic logging setup** that logs to a file with **rotation after 1MB**, you can use **`RotatingFileHandler`** from Python’s `logging.handlers` module.
+
+---
+
+### **Implementation:**
+```python
+import logging
+from logging.handlers import RotatingFileHandler
+
+# Configure logging with rotating file handler
+log_file = "app.log"
+
+logging.basicConfig(
+    level=logging.DEBUG,  # Log level: captures DEBUG, INFO, WARNING, ERROR, CRITICAL
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        RotatingFileHandler(log_file, maxBytes=1_000_000, backupCount=3)  # Rotate after 1MB
+    ]
+)
+
+# Example logs
+logging.info("This is an info message.")
+logging.debug("This is a debug message.")
+logging.warning("This is a warning!")
+logging.error("This is an error!")
+logging.critical("This is a critical error!")
+```
+
+---
+
+### **How It Works:**
+- **`RotatingFileHandler(log_file, maxBytes=1_000_000, backupCount=3)`**:
+  - **`maxBytes=1_000_000` (1MB)** → Rotates the log file when it reaches 1MB.
+  - **`backupCount=3`** → Keeps the latest 3 rotated logs (`app.log.1`, `app.log.2`, `app.log.3`).
+- **When the file exceeds 1MB**:
+  - The current `app.log` is renamed to `app.log.1`, `app.log.1` → `app.log.2`, etc.
+  - A **new `app.log` starts fresh**, preventing unlimited log growth.
+
+---
+
+### **Example Log Files After Rotation:**
+```
+app.log       # Active log file
+app.log.1     # Previous log (1MB)
+app.log.2     # Older log (1MB)
+app.log.3     # Oldest log (1MB)
+```
+
+This ensures **efficient log management** without consuming too much disk space. 
+
+Question - 19  Write a program that handles both IndexError and KeyError using a try-except block 
+Answer - 19 Here’s a Python program that handles both **IndexError** and **KeyError** using a `try-except` block:  
+
+```python
+def handle_exceptions():
+    my_list = [10, 20, 30]
+    my_dict = {"name": "Alice", "age": 25}
+
+    try:
+        # Attempt to access an out-of-range list index (IndexError)
+        print("List value:", my_list[5])
+
+        # Attempt to access a non-existing dictionary key (KeyError)
+        print("City:", my_dict["city"])
+
+    except IndexError:
+        print("Error: List index is out of range!")
+
+    except KeyError:
+        print("Error: The specified key does not exist in the dictionary.")
+
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+
+# Run the function
+handle_exceptions()
+```
+
+---
+
+### **Explanation:**
+1. **`IndexError` Handling**:
+   - Tries to access `my_list[5]`, but `my_list` only has three elements (`0, 1, 2`).
+   - If the index is out of range, the program **catches the `IndexError`**.
+
+2. **`KeyError` Handling**:
+   - Tries to access `my_dict["city"]`, but `"city"` is not a key in `my_dict`.
+   - The program **catches the `KeyError`**.
+
+3. **`Exception` (General Catch-All)**:
+   - If any **unexpected** exception occurs, it is caught and displayed.
+
+---
+
+### **Example Outputs:**
+#### **Case 1: List index out of range**
+```
+Error: List index is out of range!
+```
+
+#### **Case 2: Dictionary key missing**
+```
+Error: The specified key does not exist in the dictionary.
+```
+
+This ensures that your program **does not crash** due to missing keys or out-of-range list indices.
+
+Question - 20  How would you open a file and read its contents using a context manager in Python
+Answer - 20 You can use Python's **context manager (`with` statement)** to open and read a file. This ensures that the file is **automatically closed** after reading, even if an error occurs.
+
+---
+
+### **Example: Reading a File Using a Context Manager**
+```python
+filename = "example.txt"
+
+# Open the file and read its contents
+with open(filename, "r") as file:
+    content = file.read()
+
+# Print the content after file is automatically closed
+print(content)
+```
+
+---
+
+### **Explanation:**
+1. **`with open(filename, "r") as file:`**  
+   - Opens the file in **read mode (`"r"`)**.
+   - Ensures **automatic closure** when the block exits.
+   
+2. **`file.read()`**  
+   - Reads the entire file content into the `content` variable.
+
+---
+
+### **Alternative: Reading Line by Line**
+If the file is large, it's better to read it **line by line** to save memory:
+```python
+with open(filename, "r") as file:
+    for line in file:
+        print(line.strip())  # Print each line without extra newlines
+```
+
+---
+
+### **Why Use a Context Manager?**
+✅ **Prevents resource leaks** (file is always closed).  
+✅ **Handles exceptions cleanly**.  
+✅ **More readable and Pythonic** than `file = open(...); file.close()`.  
+
+This is the **best practice** for handling files in Python! 
+
+Question - 21  Write a Python program that reads a file and prints the number of occurrences of a specific word
+Answer - 21 Here’s a Python program that reads a file and counts the number of occurrences of a specific word:  
+
+```python
+def count_word_occurrences(filename, target_word):
+    """Reads a file and counts occurrences of a specific word (case-insensitive)."""
+    try:
+        with open(filename, "r", encoding="utf-8") as file:
+            content = file.read().lower()  # Read file and convert to lowercase
+            
+        words = content.split()  # Split content into words
+        count = words.count(target_word.lower())  # Count occurrences (case-insensitive)
+
+        print(f"The word '{target_word}' appears {count} times in '{filename}'.")
+    
+    except FileNotFoundError:
+        print(f"Error: The file '{filename}' does not exist.")
+    
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+
+# Example usage
+filename = "example.txt"  # Change this to the actual file path
+word_to_count = "Python"
+count_word_occurrences(filename, word_to_count)
+```
+
+---
+
+### **Explanation:**
+1. **Opens the file** safely using a **context manager (`with open(...)`)**.
+2. **Reads the file and converts it to lowercase** to make the search **case-insensitive**.
+3. **Splits the content into words** using `split()`.
+4. **Counts occurrences** of the target word using `count()`.
+5. **Handles errors**:
+   - **FileNotFoundError** → If the file doesn't exist, it prints an error.
+   - **General Exception** → Catches unexpected errors.
+
+---
+
+### **Example Output**
+#### **Case 1: File contains "Python" multiple times**
+```
+The word 'Python' appears 5 times in 'example.txt'.
+```
+
+#### **Case 2: File does not exist**
+```
+Error: The file 'example.txt' does not exist.
+```
+
+This method ensures a **robust and efficient word search** in a file. 
+
+Question - 22  How can you check if a file is empty before attempting to read its contents 
+Answer - 22 You can check if a file is **empty** before reading it using one of the following methods in Python:
+
+---
+
+### **Method 1: Using `os.path.getsize()`**
+This method checks the **file size in bytes** before opening it.
+
+```python
+import os
+
+filename = "example.txt"
+
+if os.path.exists(filename) and os.path.getsize(filename) == 0:
+    print(f"The file '{filename}' is empty.")
+else:
+    with open(filename, "r") as file:
+        content = file.read()
+        print(content)  # Print file content if it's not empty
+```
+
+✅ **Efficient** – No need to open the file.  
+✅ **Works for all file types** – Even binary files.
+
+---
+
+### **Method 2: Using `read()`**
+If you are already opening the file, you can check its content length:
+
+```python
+filename = "example.txt"
+
+with open(filename, "r") as file:
+    content = file.read()
+    if not content:  # Empty file check
+        print(f"The file '{filename}' is empty.")
+    else:
+        print(content)
+```
+
+✅ **Useful when you need file content anyway.**  
+⚠️ **Not ideal for very large files** – Loads full content into memory.
+
+---
+
+### **Method 3: Using `peek()` (for Large Files)**
+If working with **large files**, use `peek()` with `open()` in binary mode:
+
+```python
+filename = "example.txt"
+
+with open(filename, "rb") as file:
+    if not file.peek(1):  # Check if at least 1 byte is present
+        print(f"The file '{filename}' is empty.")
+    else:
+        print("File is not empty, proceed with reading.")
+```
+
+✅ **Efficient for large files** – Reads only **1 byte** instead of full content.
+
+---
+
+### **Best Practice?**
+- **Use `os.path.getsize()` for quick checks.**
+- **Use `read()` if you plan to process the content.**
+- **Use `peek()` for large files.**
+
+This ensures **safe and efficient file handling**! 
+
+Question - 23 Write a Python program that writes to a log file when an error occurs during file handling 
+Answer 23 - Here’s a **Python program** that writes error messages to a **log file** when an exception occurs during **file handling**:  
+
+---
+
+### **Python Program: Logging File Handling Errors**
+```python
+import logging
+
+# Configure logging
+logging.basicConfig(
+    filename="file_errors.log",  # Log file name
+    level=logging.ERROR,  # Log only errors and above
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+def read_file(filename):
+    """Attempts to read a file and logs an error if it fails."""
+    try:
+        with open(filename, "r") as file:
+            content = file.read()
+            print(content)  # Print file content if successful
+    except FileNotFoundError:
+        logging.error(f"File '{filename}' not found.")
+        print(f"Error: The file '{filename}' does not exist.")
+    except PermissionError:
+        logging.error(f"Permission denied when accessing '{filename}'.")
+        print(f"Error: No permission to access '{filename}'.")
+    except Exception as e:
+        logging.error(f"An unexpected error occurred: {e}")
+        print(f"An unexpected error occurred: {e}")
+
+# Example usage
+filename = "example.txt"  # Change to a non-existent file to test error logging
+read_file(filename)
+```
+
+---
+
+### **How It Works:**
+1. **Configures logging**:
+   - Logs **error messages** to `file_errors.log`.
+   - Uses `%(asctime)s` for timestamps in logs.
+   
+2. **Tries to open and read a file**.
+   - If the file **does not exist**, logs `FileNotFoundError`.
+   - If there are **permission issues**, logs `PermissionError`.
+   - **Handles other exceptions** gracefully and logs them.
+
+---
+
+### **Example Output (Console)**
+```
+Error: The file 'example.txt' does not exist.
+```
+
+### **Example Log File (`file_errors.log`)**
+```
+2025-03-08 12:00:45,678 - ERROR - File 'example.txt' not found.
+```
+
+---
+
+### **Why Use Logging for Errors?**
+✅ **Tracks issues** even when the program is not running.  
+✅ **Helps debugging** in production environments.  
+✅ **Prevents application crashes** by handling errors safely.  
+
+This is a **robust file-handling approach** with **error logging**!
+
+
+
+
+
+
+
+
+
